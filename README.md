@@ -177,4 +177,4 @@ Open your browser and navigate to:
     *   *Password*: `user123`
 
 ---
-*Created with 💙 by Antigravity AI for NexusERP*
+*Author : Pooja Maru*
