@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Theme Engine -->
+    <script src="js/theme.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Quotation - Admin Panel</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="icon-container"><i data-lucide="activity"></i></div>
+            <h2>NexusERP Portal</h2>
+        </div>
+        <div class="nav-user">
+        <!-- Theme Toggle Switch -->
+        <div class="theme-switch-wrapper" style="margin-right: 15px;">
+            <div class="theme-icon-container">
+                <i data-lucide="sun" style="width: 18px; height: 18px; margin-right: 4px;"></i>
+            </div>
+            <label class="theme-switch" for="themeCheckbox">
+                <input type="checkbox" id="themeCheckbox">
+                <span class="theme-switch-slider"></span>
+            </label>
+            <div class="theme-icon-container">
+                <i data-lucide="moon" style="width: 18px; height: 18px; margin-left: 4px;"></i>
+            </div>
+        </div>
+            <span id="userName">Admin</span>
+            <button onclick="auth.logout()" class="btn btn-small btn-danger">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <ul class="sidebar-menu">
+            <li>
+                <a href="dashboard.html">
+                    <span class="icon-container"><i data-lucide="layout-dashboard"></i></span>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="buyers.html">
+                    <span class="icon-container"><i data-lucide="shopping-cart"></i></span>
+                    <span>Buyers</span>
+                </a>
+            </li>
+            <li>
+                <a href="manufacturers.html">
+                    <span class="icon-container"><i data-lucide="factory"></i></span>
+                    <span>Manufacturers</span>
+                </a>
+            </li>
+            <li>
+                <a href="tasks.html">
+                    <span class="icon-container"><i data-lucide="check-square"></i></span>
+                    <span>Tasks</span>
+                </a>
+            </li>
+            <li>
+                <a href="calendar.html">
+                    <span class="icon-container"><i data-lucide="calendar"></i></span>
+                    <span>Calendar</span>
+                </a>
+            </li>
+            <li>
+                <a href="proforma_invoice.html">
+                    <span class="icon-container"><i data-lucide="receipt"></i></span>
+                    <span>Proforma Invoice</span>
+                </a>
+            </li>
+            <li class="active">
+                <a href="quotation.html">
+                    <span class="icon-container"><i data-lucide="file-text"></i></span>
+                    <span>Quotations</span>
+                </a>
+            </li>
+            <li>
+                <a href="uploads.html">
+                    <span class="icon-container"><i data-lucide="folder-open"></i></span>
+                    <span>Uploads</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="split-view-container">
+        <div class="split-form-section">
+            <h2><i data-lucide="file-text"></i> Generate Quotation</h2>
+            <form id="quote-form" onsubmit="submitJSON(event)">
+                <div id="products-container"></div>
+                <button type="button" class="btn btn-secondary" onclick="addProduct()" style="width: 100%; margin-bottom: 24px;">+ Add Product</button>
+                
+                <div class="paper-divider-blue"></div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Price Term</label>
+                        <select id="price_term" onchange="updatePreview()">
+                            <option value="FOB">FOB</option>
+                            <option value="CIF">CIF</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Grand Total Price ($)</label>
+                        <input type="text" id="grand_total" value="0.00" readonly style="background-color: var(--slate-50);">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Advance Payment %</label>
+                        <input type="number" id="advance_pct" value="60" oninput="calculateMath()" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Balance Payment %</label>
+                        <input type="number" id="balance_pct" value="40" readonly required style="background-color: var(--slate-50);">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Delivery Mode</label>
+                        <select id="delivery_mode" onchange="updatePreview()">
+                            <option value="By Sea">By Sea</option>
+                            <option value="By Air">By Air</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Timeline (Days)</label>
+                        <input type="text" id="timeline" value="30-45" oninput="updatePreview()" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="export-btn" style="width: 100%;"><i data-lucide="download" class="btn-icon"></i> Export Finished PDF</button>
+            </form>
+        </div>
+
+        <div class="split-preview-section">
+            <div class="paper" id="preview-paper">
+                <div class="paper-header">
+                    <div class="paper-logo">NEXUS EXIM<br>GLOBAL SOLUTIONS</div>
+                    <div class="paper-contact">
+                        Suite 404, Trade Centre, Sector 62,<br>
+                        Noida, UP, India-201301.<br>
+                        https://nexusexim.io<br>
+                        sales@nexusexim.io
+                    </div>
+                </div>
+                <div class="paper-divider-blue"></div>
+                <div class="paper-divider-gold"></div>
+
+                <div style="margin-top: 10px; font-size: 11px; line-height: 1.5; color: #475569 !important;">
+                    <strong>Greetings from NEXUS EXIM GLOBAL SOLUTIONS!</strong><br><br>
+                    We are pleased to offer you a quotation for the export of premium-quality products, as per your interest.
+                    Please find the detailed proposal below.
+                </div>
+                
+                <div class="paper-divider-blue"></div>
+                <h3>Product Details</h3>
+                <div id="preview_products_list"></div>
+                
+                <div class="paper-divider-blue"></div>
+                <h3>Price Terms (<span id="prev_price_term" class="highlight-box">FOB</span>)</h3>
+                <ul id="preview_prices_list" style="list-style-type: none; padding-left: 0;"></ul>
+                
+                <div class="paper-divider-blue"></div>
+                <h3>Payment Terms</h3>
+                <ul style="list-style-type: none; padding-left: 0;">
+                    <li style="margin-bottom: 8px;">• <span id="prev_advance" class="highlight-box">60</span>% Advance of the total <span id="prev_price_term_2">FOB</span> Value upon order confirmation</li>
+                    <li>• <span id="prev_balance" class="highlight-box">40</span>% Balance under Irrevocable Letter of Credit (LC) at sight</li>
+                </ul>
+                
+                <div class="paper-divider-blue"></div>
+                <h3>Estimated Delivery Timeline</h3>
+                <ul style="list-style-type: none; padding-left: 0;">
+                    <li>• <span id="prev_delivery_mode" class="highlight-box">By Sea</span>: <span id="prev_timeline" class="highlight-box">30-45 days</span></li>
+                </ul>
+                
+                <div class="paper-footer">
+                    We look forward to building a strong and successful business relationship with you.<br><br>
+                    <div class="paper-signatory">NEXUS EXIM GLOBAL</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        lucide.createIcons();
+        let productCount = 0;
+        function addProduct() {
+            productCount++;
+            const container = document.getElementById("products-container");
+            const div = document.createElement("div");
+            div.className = "product-block animate-scale-in";
+            div.id = `product_block_${productCount}`;
+            div.innerHTML = `
+                <h4><i data-lucide="package"></i> Product #${productCount}</h4>
+                <button type="button" class="btn btn-small btn-danger remove-btn" onclick="removeProduct('${div.id}')">
+                    <i data-lucide="trash-2"></i>
+                </button>
+                <div class="form-group"><label>Product Name</label><input type="text" class="p_name" value="Cardamom" oninput="updatePreview()" required></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Quantity</label><input type="text" class="p_qty" value="12 MT" oninput="updatePreview()" required></div>
+                    <div class="form-group"><label>Packaging</label><input type="text" class="p_pkg" value="10 kg" oninput="updatePreview()" required></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Grade</label><input type="text" class="p_grade" value="Export Quality" oninput="updatePreview()" required></div>
+                    <div class="form-group"><label>Origin</label><input type="text" class="p_origin" value="India" oninput="updatePreview()" required></div>
+                </div>
+                <div class="form-group"><label>Price for this Product ($)</label><input type="number" class="p_price" value="359300" oninput="updatePreview()" required></div>
+            `;
+            container.appendChild(div);
+            lucide.createIcons();
+            updatePreview();
+        }
+        function removeProduct(id) { document.getElementById(id).remove(); updatePreview(); }
+        function updatePreview() {
+            const blocks = document.querySelectorAll(".product-block");
+            let productsHTML = ""; let pricesHTML = ""; let total = 0;
+            blocks.forEach((block, i) => {
+                const name = block.querySelector(".p_name").value || "...";
+                const qty = block.querySelector(".p_qty").value || "...";
+                const pkg = block.querySelector(".p_pkg").value || "...";
+                const grade = block.querySelector(".p_grade").value || "...";
+                const origin = block.querySelector(".p_origin").value || "...";
+                const price = parseFloat(block.querySelector(".p_price").value) || 0;
+                total += price;
+                productsHTML += `<strong>${i+1}. ${name}</strong><ul style="list-style-type: disc; padding-left: 20px; margin: 5px 0;"><li>Qty: ${qty}</li><li>Pkg: ${pkg}</li><li>Grade: ${grade}</li><li>Origin: ${origin}</li></ul>`;
+                pricesHTML += `<li>${name}: $${price.toLocaleString()}</li>`;
+            });
+            document.getElementById("grand_total").value = total.toLocaleString();
+            document.getElementById("preview_products_list").innerHTML = productsHTML;
+            document.getElementById("preview_prices_list").innerHTML = pricesHTML;
+            const pTerm = document.getElementById("price_term").value;
+            document.getElementById("prev_price_term").innerText = pTerm;
+            document.getElementById("prev_price_term_2").innerText = pTerm;
+            document.getElementById("prev_delivery_mode").innerText = document.getElementById("delivery_mode").value;
+            document.getElementById("prev_timeline").innerText = document.getElementById("timeline").value;
+            calculateMath();
+        }
+        function calculateMath() {
+            let adv = document.getElementById("advance_pct").value;
+            if (adv > 100) adv = 100;
+            document.getElementById("balance_pct").value = 100 - adv;
+            document.getElementById("prev_advance").innerText = adv;
+            document.getElementById("prev_balance").innerText = 100 - adv;
+        }
+        async function submitJSON(e) {
+            e.preventDefault();
+            const btn = document.getElementById('export-btn');
+            btn.innerText = "⏳ Generating...";
+            const products = [];
+            document.querySelectorAll(".product-block").forEach(b => {
+                products.push({
+                    name: b.querySelector(".p_name").value,
+                    quantity: b.querySelector(".p_qty").value,
+                    packaging: b.querySelector(".p_pkg").value,
+                    grade: b.querySelector(".p_grade").value,
+                    origin: b.querySelector(".p_origin").value,
+                    price: parseFloat(b.querySelector(".p_price").value) || 0
+                });
+            });
+            const payload = {
+                products,
+                price_term: document.getElementById("price_term").value,
+                advance_pct: parseInt(document.getElementById("advance_pct").value) || 0,
+                balance_pct: parseInt(document.getElementById("balance_pct").value) || 0,
+                delivery_mode: document.getElementById("delivery_mode").value,
+                timeline: document.getElementById("timeline").value
+            };
+            const res = await fetch('/api/quotation/generate-pdf', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Quotation_${products[0]?.name || 'Export'}.pdf`;
+            a.click();
+            btn.innerText = "🚀 Export Finished PDF";
+        }
+        window.onload = addProduct;
+    </script>
+</body>
+</html>
